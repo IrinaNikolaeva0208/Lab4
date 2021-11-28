@@ -20,6 +20,7 @@ public class GraphicsDisplay extends JPanel {
 	private Double[][] graphicsData;
 	private boolean showAxis = true;
 	private boolean showMarkers = true;
+	private boolean showExtremes = true;
 	private double minX;
 	private double maxX;
 	private double minY;
@@ -29,16 +30,15 @@ public class GraphicsDisplay extends JPanel {
 	private BasicStroke axisStroke;
 	private BasicStroke markerStroke;
 	private Font axisFont;
+	private Font extremesFont;
 	
 	public GraphicsDisplay() {
 		setBackground(Color.WHITE);
-		graphicsStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-		BasicStroke.JOIN_ROUND, 10.0f, null, 0.0f);
-		axisStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-		BasicStroke.JOIN_MITER, 10.0f, null, 0.0f);
-		markerStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
-		BasicStroke.JOIN_MITER, 10.0f, null, 0.0f);
+		graphicsStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, new float[] {4,1,2,1,1,1,2,1,4,1}, 0.0f);
+		axisStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, null, 0.0f);
+		markerStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, null, 0.0f);
 		axisFont = new Font("Serif", Font.BOLD, 36);
+		extremesFont = new Font("Serif", Font.ITALIC, 10);
 	}
 	
 	public void showGraphics(Double[][] graphicsData) {
@@ -50,6 +50,12 @@ public class GraphicsDisplay extends JPanel {
 		this.showAxis = showAxis;
 		repaint();
 	}
+	
+	public void setShowExtremes(boolean showExtremes) {
+		this.showExtremes = showExtremes;
+		repaint();
+	}
+	
 	public void setShowMarkers(boolean showMarkers) {
 		this.showMarkers = showMarkers;
 		repaint();
@@ -91,10 +97,30 @@ public class GraphicsDisplay extends JPanel {
 		if (showAxis) paintAxis(canvas);
 		paintGraphics(canvas);
 		if (showMarkers) paintMarkers(canvas);
+		if (showExtremes) signExtremes(canvas);
 		canvas.setFont(oldFont);
 		canvas.setPaint(oldPaint);
 		canvas.setColor(oldColor);
 		canvas.setStroke(oldStroke);
+	}
+	
+	protected void signExtremes (Graphics2D canvas) {
+		canvas.setColor(Color.BLACK);
+		canvas.setFont(extremesFont);
+		FontRenderContext context = canvas.getFontRenderContext();
+		for (int i=0; i<graphicsData.length; i++) {
+			if(i!=0 && i!=graphicsData.length-1)
+				if (graphicsData[i][1]<graphicsData[i+1][1] && graphicsData[i][1]<graphicsData[i-1][1]) {
+					Rectangle2D bounds = extremesFont.getStringBounds("Ymin = "+graphicsData[i][1].toString(), context);
+					Point2D.Double labelPos = xyToPoint(graphicsData[i][0], graphicsData[i][1]);
+					canvas.drawString("Ymin = "+graphicsData[i][1].toString(), (float)labelPos.getX() + 10, (float)(labelPos.getY() - bounds.getY()));
+				}
+				else if (graphicsData[i][1]>graphicsData[i+1][1] && graphicsData[i][1]>graphicsData[i-1][1]) {
+					Rectangle2D bounds = extremesFont.getStringBounds("Ymax = "+graphicsData[i][1].toString(), context);
+					Point2D.Double labelPos = xyToPoint(graphicsData[i][0], graphicsData[i][1]);
+					canvas.drawString("Ymax = "+graphicsData[i][1].toString(), (float)labelPos.getX()+35, (float)(labelPos.getY() - bounds.getY()));
+				}
+		}
 	}
 	
 	protected void paintGraphics(Graphics2D canvas) {
@@ -102,8 +128,7 @@ public class GraphicsDisplay extends JPanel {
 		canvas.setColor(Color.RED);
 		GeneralPath graphics = new GeneralPath();
 		for (int i=0; i<graphicsData.length; i++) {
-			Point2D.Double point = xyToPoint(graphicsData[i][0],
-			graphicsData[i][1]);
+			Point2D.Double point = xyToPoint(graphicsData[i][0], graphicsData[i][1]);
 			if (i>0) {
 				graphics.lineTo(point.getX(), point.getY());
 			} else {

@@ -27,6 +27,7 @@ public class MainFrame extends JFrame {
 	private JFileChooser fileChooser = null;
 	private JCheckBoxMenuItem showAxisMenuItem;
 	private JCheckBoxMenuItem showMarkersMenuItem;
+	private JCheckBoxMenuItem showExtremesMenuItem;
 	private GraphicsDisplay display = new GraphicsDisplay();
 	private boolean fileLoaded = false;
 	
@@ -54,24 +55,34 @@ public class MainFrame extends JFrame {
 		fileMenu.add(openGraphicsAction);
 		JMenu graphicsMenu = new JMenu("График");
 		menuBar.add(graphicsMenu);
+		
 		Action showAxisAction = new AbstractAction("Показывать оси координат") {
 			public void actionPerformed(ActionEvent event) {
 				display.setShowAxis(showAxisMenuItem.isSelected());
 			}
 		};
-		
 		showAxisMenuItem = new JCheckBoxMenuItem(showAxisAction);
 		graphicsMenu.add(showAxisMenuItem);
 		showAxisMenuItem.setSelected(true);
+		
 		Action showMarkersAction = new AbstractAction("Показывать маркеры точек") {
 			public void actionPerformed(ActionEvent event) {
 				display.setShowMarkers(showMarkersMenuItem.isSelected());
 			}
 		};
-		
 		showMarkersMenuItem = new JCheckBoxMenuItem(showMarkersAction);
 		graphicsMenu.add(showMarkersMenuItem);
 		showMarkersMenuItem.setSelected(true);
+		
+		Action showExtremesAction = new AbstractAction("Показывать локальные экстремумы функции") {
+			public void actionPerformed(ActionEvent event) {
+				display.setShowExtremes(showExtremesMenuItem.isSelected());
+			}
+		};
+		showExtremesMenuItem = new JCheckBoxMenuItem(showExtremesAction);
+		graphicsMenu.add(showExtremesMenuItem);
+		showExtremesMenuItem.setSelected(true);
+		
 		graphicsMenu.addMenuListener(new GraphicsMenuListener());
 		getContentPane().add(display, BorderLayout.CENTER);
 	}
@@ -111,6 +122,7 @@ public class MainFrame extends JFrame {
 		public void menuSelected(MenuEvent e) {
 			showAxisMenuItem.setEnabled(fileLoaded);
 			showMarkersMenuItem.setEnabled(fileLoaded);
+			showExtremesMenuItem.setEnabled(fileLoaded);
 		}
 		
 		public void menuDeselected(MenuEvent e) {
